@@ -4,7 +4,6 @@ import guru.springframework.spring6resttemplate.model.BeerDTO;
 import guru.springframework.spring6resttemplate.model.BeerDTOPageImpl;
 import guru.springframework.spring6resttemplate.model.BeerStyle;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.util.UUID;
 
 /**
  * Created by jt, Spring Framework Guru.
@@ -24,6 +26,9 @@ public class BeerClientImpl implements BeerClient {
     private final RestTemplate restTemplate;
 
     private static final String GET_BEER_PATH = "/api/v1/beer";
+    private static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
+
+    private static final String POST_BEER_PATH = "/api/v1/beer";
 
     @Override
     public Page<BeerDTO> listBeers() {
@@ -63,16 +68,39 @@ public class BeerClientImpl implements BeerClient {
             beerName, beerStyle, showInventory, pageNumber, pageSize);
     }
 
+    @Override
+    public BeerDTO getBeerById(UUID beerId) {
+        return restTemplate.getForObject(GET_BEER_BY_ID_PATH, BeerDTO.class, beerId);
+    }
+
+    @Override
+    public BeerDTO createBeer(BeerDTO newBeer) {
+        URI uri = restTemplate.postForLocation(POST_BEER_PATH, newBeer);
+        assert uri != null;
+        return restTemplate.getForObject(uri.getPath(), BeerDTO.class);
+    }
+
+    @Override
+    public BeerDTO updateBeer(UUID beerId, BeerDTO beerDTO) {
+        HttpEntity<BeerDTO> httpEntity = new HttpEntity<>(beerDTO, new HttpHeaders());
+        return restTemplate.exchange(GET_BEER_BY_ID_PATH, HttpMethod.PUT, httpEntity, BeerDTO.class, beerId).getBody();
+    }
+
+    @Override
+    public void deleteBeer(UUID id) {
+        restTemplate.delete(GET_BEER_BY_ID_PATH, id);
+    }
+
     private BeerDTOPageImpl getBeerDTOPage(String path, HttpMethod httpMethod, HttpEntity<?> httpEntity,
                                            String beerName, BeerStyle beerStyle, Boolean showInventory,
-                                           Integer pageNumber, Integer pageSize) {
+                                           Integer pageNumber, Integer pageSize, Object... uriVariables) {
         UriComponentsBuilder uriComponentsBuilder = getUriComponentsBuilder(path, beerName, beerStyle,
             showInventory, pageNumber, pageSize);
 
 
         ResponseEntity<BeerDTOPageImpl> response =
                 restTemplate.exchange(uriComponentsBuilder.toUriString(), httpMethod, httpEntity,
-                    BeerDTOPageImpl.class);
+                    BeerDTOPageImpl.class, uriVariables);
 
         return response.getBody();
     }

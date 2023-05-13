@@ -1,8 +1,8 @@
 package guru.springframework.spring6resttemplate.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -10,9 +10,12 @@ import java.util.UUID;
 /**
  * Created by jt, Spring Framework Guru.
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Data
-public class BeerDTO {
+public class BeerDTO implements Serializable {
     private UUID id;
     private Integer version;
     private String beerName;
