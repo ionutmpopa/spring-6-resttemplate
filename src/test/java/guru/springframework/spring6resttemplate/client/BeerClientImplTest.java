@@ -23,7 +23,7 @@ class BeerClientImplTest {
     @Test
     void listBeersWithoutArgument() {
         Page<BeerDTO> beerDTOPage = beerClient.listBeers();
-        Assertions.assertThat(beerDTOPage.getTotalElements()).isEqualTo(2413);
+        Assertions.assertThat(beerDTOPage.getTotalElements()).isEqualTo(2435L);
         Assertions.assertThat(beerDTOPage.getSize()).isEqualTo(25);
     }
 
